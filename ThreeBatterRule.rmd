@@ -1,0 +1,369 @@
+---
+title: "Using MLB's New Three Batter Rule to Your Advantage"
+author: "Noah Beam"
+date: "May 20, 2020"
+output: 
+  html_document:
+    keep_md: true
+---
+
+
+```{r, echo=FALSE, message=FALSE,warning=FALSE}
+library(ggplot2)
+library(tidyverse)
+library(readr)
+library(plotly)
+library(knitr)
+library(kableExtra)
+library(DT)
+library(janitor)
+library(data.table)
+setwd("~/Google Drive/Blogs/Three Batter Rule")
+```
+
+The game of baseball constantly changes through technological advancements, shifting styles of play, new rules, and more. MLB’s new three-batter rule states that pitchers must “either face a minimum of three batters in an appearance or pitch to the end of a half-inning, with exceptions for injuries and illnesses” (MLB.com). MLB’s new three-batter minimum rule will change the game for both batters and pitchers. Batters will encounter more favorable matchups against relievers and lineup structures eventually will adjust, and the new rule will impact the market for relievers.
+
+The ‘LOOGY’ specialist will lose value and become non-existent. Jesse Orosco pitched in an MLB-record 1,252 games and averaged less than 1.0 IP/appearance in his final 12 seasons. Pitchers like Orosco are on their way out the door; meanwhile, generalist pitchers who are effective against both LHH and RHH will gain value. Which relievers should a team target after this rule change?
+
+To answer this question, I downloaded 2019 stats from FanGraphs.com for relief pitchers with at least 20 IP (10 IP vs LHH and 10 IP vs RHH). FanGraphs defaults to a 20 IP minimum, so I used 20 IP as my qualifier with 10 IP to both types of hitters, ensuring the relief pitcher has both quality and quantity of success. As I see it, the main contributors to adjusted value will be LHH/RHH splits and durability; so, I will focus on opponent OPS, IP/G, BF/G, and consecutive appearances.
+
+---
+
+## Part 1: LHH/RHH splits
+LHH/RHH splits are important because relievers can no longer enter a game to face one particular batter and then exit; rather, relievers will most likely face both LHH and RHH in every outing. Here is a table with the number of plate appearances by batter and pitcher. The third column is the probability of facing three consecutive batters of similar handedness, e.g. the 2.31% at the bottom right is the frequency with which a LHP would face three consecutive LHHs.
+
+Split         | Number of PAs | Percent chance of 3 Consecutive PAs
+------------- | ------------- | -------------
+vs RHH        | 110,136       | 20.59%
+vs LHH        | 76,381        | 6.87%
+vs RHH as RHP | 73,131        | 15.98%
+vs LHH as RHP | 61,636        | 9.57%
+vs RHH as LHP | 37,005        | 36.56%
+vs LHH as LHP | 14,745        | 2.31%
+
+Two key lessons may be gleaned from this table.
+
+1. It is unlikely that a pitcher will face the same type of hitter (RHH or LHH) in three consecutive plate appearances  
+    + The highest percent chance is only 37% with LHP, which is one in every three pitchers. This means *two in every three pitchers will face both RHHs and LHHs*.  
+2. Managers adjust their batting order, e.g. with pinch-hitters and platoons, based on the type of pitcher (RHP or LHP)  
+    + In 2020 *managers will continue to productively manage lineups* - adjusting to this rule change and leveraging expanded rosters - *to increase the frequency with which pitchers face both LHHs and RHHs*.  
+
+Having established the importance of success against both LHHs and RHHs, I pulled pitcher splits data (e.g. opponent OPS) to identify which relievers are above-average against both LHH and RHH. These relievers are likely to be undervalued in the current market, and List 1 will be relievers with better than average LHH/RHH splits.
+
+```{r,echo=FALSE,results='hide',message=FALSE,warning=FALSE}
+RP_vs_LHH <- read_csv("Splits Leaderboard Data vs LHH as RP.csv", 
+                      col_types = cols(`LHH_SO/BB` = col_double())
+                      )
+cleaned_RP_vs_LHH <- RP_vs_LHH %>% select(c(Name,playerId,IP,LHH_OPS,`LHH_HR/9`,`LHH_SO/BB`,LHH_ERA,LHH_WHIP))
+RP_vs_RHH <- read_csv("Splits Leaderboard Data vs RHH as RP.csv")
+cleaned_RP_vs_RHH <- RP_vs_RHH %>%
+  select(c(Name,playerId,IP,RHH_OPS,`RHH_HR/9`,
+           `RHH_SO/BB`,RHH_ERA,RHH_WHIP))
+Splits <- inner_join(cleaned_RP_vs_LHH,cleaned_RP_vs_RHH,by="playerId")
+Splits <- Splits %>% 
+  rename(LHH_IP = IP.x) %>% 
+  rename(RHH_IP = IP.y)
+Splits <- Splits %>% 
+  select(-Name.y) %>% 
+  rename("Name" = Name.x) %>% 
+  mutate(IP = LHH_IP + RHH_IP)
+Plot_Splits <- ggplot(Splits, aes(x=LHH_OPS, y=RHH_OPS, 
+                                  size=IP, names=Name)) +
+  geom_point(alpha=0.7) +
+  geom_vline(xintercept = mean(Splits$LHH_OPS), col="blue") +
+  geom_hline(yintercept = mean(Splits$RHH_OPS), col="blue") +
+  labs(x="LHH OPS",y="RHH OPS")
+ggplotly(Plot_Splits)
+# Now get a list of those pitchers with better than average opponent OPS for both LHHs and RHHs
+Splits %>% filter(LHH_OPS < mean(LHH_OPS) & RHH_OPS < mean(RHH_OPS))
+
+# Prepare table
+List1 <- Splits %>% 
+  filter(LHH_OPS < mean(LHH_OPS) & RHH_OPS < mean(RHH_OPS)) %>% 
+  select(-IP) %>% 
+  arrange(Name)
+List1Table <- List1 %>% select(-playerId)
+```
+First, we have a scatterplot for pitchers plotted by opponent OPS vs both LHHs and RHHs. The size of the points relates to IP, and the blue lines are the mean opponent OPS vs LHHs and RHHs. Hovering over a point will display the pitcher's name and his LHH OPS, RHH OPS, and IP. We build list 1 from the pitchers in the bottom left quadrant.
+
+**Dynamic graph of relief pitchers plotted by opponent OPS vs both LHHs and RHHs**
+```{r,echo=FALSE}
+ggplotly(Plot_Splits)
+```
+
+
+**List 1 of RPs with better than average opponent OPS against both LHHs and RHHs**
+
+Scroll right to see the full table.
+```{r,echo=FALSE}
+# build aesthetics
+font.size <- "9pt"
+sketch1 = htmltools::withTags(table(class = 'display',
+                                   thead(tr(th(rowspan = 2, 'Pitcher'),
+                                            th(colspan = 6, 'vs LHH'),
+                                            th(colspan = 6, 'vs RHH')),
+                                         tr(lapply(rep(c("IP","OPS","HR/9","SO/BB","ERA","WHIP"), 
+                                                       2), th)))))
+
+# display table
+DT::datatable(List1Table, 
+              container = sketch1, rownames = FALSE, 
+              options=list(autoWidth = TRUE, 
+                           columnDefs = list(list(width = '110px', targets = 0),
+                                             list(width = '10px', targets = 1:12)),
+                           scrollX = TRUE,
+       initComplete = htmlwidgets::JS(
+          "function(settings, json) {",
+          paste0("$(this.api().table().container()).css({'font-size': '", font.size, "'});"),
+          "}")
+       ) ) %>% formatRound(c("LHH_OPS","LHH_HR/9","LHH_SO/BB","LHH_ERA","LHH_WHIP","RHH_OPS",
+                             "RHH_HR/9","RHH_SO/BB","RHH_ERA","RHH_WHIP"),
+                           3) %>%
+  formatStyle(c(1,7), `border-right` = "solid 2px")
+```
+So List 1 includes 62 RPs with both at least 20 IP and better than average opponent OPS against both LHHs and RHHs. This list includes elite closers such as Kenley Jansen (LAD), who was set to earn $18m this year; and pitchers like Jake Diekman (OAK) and Marcus Walden (BOS), who are both roughly the same age as Jansen but set to earn significantly less in the 2020 season. We already see that some teams will receive more cost-effective production considering this rule change.
+
+However, Diekman will not meet the durability requirements of 2019, but that could be attributed to lingering effects of his chronic ulcerative colitis surgery. Nonetheless, Diekman (like all pitchers on List 1) will be more valuable after the rule change, even though his name does not appear on the final list. Walden (31), however, is on the final list after pitching in just two MLB seasons. He will be a player to watch for the possible 2020 season.
+
+---
+
+## Part 2: Durability
+The second aspect of altered value is durability — relievers likely will throw more pitches per appearance, so we should investigate the ability of relievers to pitch consecutive days under this new rule. After pulling data on batters faced by relievers, we want to focus our attention on relievers whose mean batters faced was at least three and mean IP was at least one. 
+```{r,echo=FALSE,results='hide'}
+Games_and_Batters_Faced <- read_csv("Games and Batters Faced.csv", 
+                                    col_types = cols_only(G = col_guess(), IP = col_guess(), 
+                                                          Name = col_guess(), TBF = col_guess(), 
+                                                          playerid = col_guess()
+                                                          )
+                                    )
+cleaned_Games_and_Batters_Faced <- Games_and_Batters_Faced %>% 
+  mutate(`IP/G` = IP/G) %>% 
+  mutate(`TBF/G` = TBF/G)
+LessThanThreeBattersPerGame <- cleaned_Games_and_Batters_Faced %>% 
+  filter(`TBF/G` < 3)
+LessThanThreeBattersPerGame$Name
+Game_Logs <- read_csv("Game Logs.csv", 
+                      col_types = cols_only(Date = col_guess(), IP = col_guess(), 
+                                            Name = col_guess(), TBF = col_guess(), 
+                                            playerId = col_guess()
+                                            )
+                      )
+LengthyOutingRelievers <- cleaned_Games_and_Batters_Faced %>% 
+  filter(`TBF/G` > 3 & `IP/G` >= 1) %>% 
+  arrange(Name)
+LengthyOutingRelievers_no_playerId <- LengthyOutingRelievers %>% select(-playerid)
+Durable_Length <- LengthyOutingRelievers %>% select(playerid)
+```
+And fortunately for general managers and pitchers alike, only two pitchers faced less than 3 batters per appearance:
+
+* Adam Kolarek
+* Andrew Chafin
+
+Kolarek and Chafin are great example of LOOGY pitchers whose production and value will decrease by the rule change. Kolarek pitched in 80 games during the 2019 season, only logging 55 IP. He faced only 1 batter in 28 (35% of) appearances and recorded less than 1 IP in 49 (61% of) appearances.
+
+Similarly, Chafin pitched in 77 games, logging only 52.2 IP. He faced only 1 batter in 25 (32% of) appearances and recorded less than 1 IP in 49 (64% of) appearances. Chafin had a sub-3 ERA vs lefties but struggled against righties, posting an ERA over 5. Pitchers who are unable to successfully pitch against multiple batters will be much less valuable after implementation of this new rule.
+
+Now we have a list of 89 pitchers that faced at least an average of 3 batters per appearance and recorded at least 1 IP per appearance. But before officially declaring List 2, let's confirm the other aspect of durability: recording at least 1 IP on consecutive days. 
+
+```{r,echo=FALSE,results='hide',warning=FALSE,message=FALSE}
+Daily_IP_per_PitcherID <- Game_Logs %>% 
+  # modify table so it can be pivoted
+  select(-c(Name,TBF)) %>% 
+  group_by(playerId) %>% 
+  mutate(row = row_number()) %>%
+  # pivot table to combine IP for all pitchers, filling all na values with 0
+  tidyr::pivot_wider(names_from = playerId, values_from = IP, values_fill = list(IP=0)) %>%
+  # remove row number
+  select(-row) %>% 
+  # collect rows into one record per date
+  group_by(Date) %>% 
+  summarise_each(funs(sum))
+
+colstokeep <- Daily_IP_per_PitcherID %>% 
+  gather(player, value, -Date) %>% 
+  group_by(player) %>% 
+  mutate(conseq = value + shift(value, fill = 0, type = "lead")) %>% 
+  filter(conseq >= 1) %>% 
+  distinct(player) %>% 
+  pull() 
+
+playerIds_tokeep <-  Daily_IP_per_PitcherID %>% 
+  select(colstokeep)
+Durable_Consecutive <- as_tibble(as.numeric(rownames(t(playerIds_tokeep)))) %>% 
+  rename(playerid = value)
+List2 <- inner_join(Durable_Consecutive, Durable_Length)
+List2 <- inner_join(List2, Games_and_Batters_Faced) %>% 
+  rename(playerId = playerid)
+
+Final_List_for_Plot <- inner_join(List1,List2,by="playerId") %>% 
+  rename(Name=Name.x)
+Final_Table <- inner_join(List1,List2,by="playerId") %>% 
+  select(-c(Name.y,playerId)) %>% 
+  rename(Name = Name.x) %>% 
+  mutate(`IP/G` = round(IP/G,1)) %>% 
+  mutate(`TBF/G` = round(TBF/G,1))
+names(Final_Table) <- c(names(List1Table), "G",	"IP",	"TBF",	"IP/G",	"TBF/G")
+Final_List <- Final_Table[,1]
+Current_Teams <- c("CHW","LAA","TBA","WAS","TBA","SDN","PIT","STN","LAA",
+                   "KCA","MIL","HOU","LAN","ARI","TOR","LAN","SDN","OAK",
+                   "BOS","ATL","CIN","SFN","FA","COL","ATL","NYN","MIN",
+                   "SFN","LAA","ATL","OAK")
+Final_Table_Teams <- add_column(Final_Table, Current_Teams, .after = 1)
+```
+
+Fortunately for MLB teams, that list is quite extensive, featuring `r length(playerIds_tokeep)` of the 876 players who appeared in relief. And all `r length(playerIds_tokeep)` pitchers who completed at least one IP on consecutive days also faced at least an average of 3 batters per appearance and recorded at least 1 IP per appearance. So, our list of 89 pitchers is unchanged and List 2 is complete.
+
+**List 2 of RPs averaging at least 3 BF and at least 1 IP per appearance.**
+```{r,echo=FALSE}
+# display table
+DT::datatable(LengthyOutingRelievers_no_playerId, 
+              rownames = FALSE, 
+              width = '675px',
+              options=list(autoWidth = TRUE, 
+                           columnDefs = list(list(width = '70px', targets =0),
+                                             list(width = '8px', targets = 1:5)))) %>% 
+  formatRound(c("TBF/G","IP/G"),1) %>% 
+  formatStyle(1,`border-right` = "solid 2px") %>%
+  formatStyle(c(1:6), fontSize = '90%')
+```
+
+---
+
+## Final List
+
+By combining List 1 (LHH/RHH splits) and List 2 (Durability), we build a list of `r nrow(Final_Table_Teams)` undervalued relievers.   
+
+**Updated scatterplot with `r nrow(Final_Table_Teams)` undervalued relievers**
+
+Pitchers in the final list are highlighted in this scatterplot. The size of the points relates to IP, and the blue lines are the mean opponent OPS vs LHHs and RHHs. Hovering over a point will display the pitcher's name.
+```{r,echo=FALSE,warning=FALSE}
+Final_Plot <- ggplot(Splits, aes(x=LHH_OPS, y=RHH_OPS, size=IP, names=Name)) +
+  geom_point(aes(alpha=0.2)) + 
+  geom_point(data = Final_List_for_Plot, aes(x=LHH_OPS, y=RHH_OPS, size=IP, text=Name, alpha=1)) +
+  geom_vline(xintercept = mean(Splits$LHH_OPS), col="blue") +
+  geom_hline(yintercept = mean(Splits$RHH_OPS), col="blue")
+
+ggplotly(Final_Plot, tooltip = "text")
+```
+
+
+
+**Undervalued relievers**  
+Scroll right to see the full table. 
+```{r,echo=FALSE}
+# build aesthetics
+sketch3 = htmltools::withTags(table(class = 'display',
+                                   thead(tr(th(colspan = 2, ''),
+                                            th(colspan = 6, 'vs LHH'),
+                                            th(colspan = 6, 'vs RHH'),
+                                            th(colspan = 5, 'Durability')),
+                                         tr(lapply(c("Name","Team","IP","OPS","HR/9","SO/BB",
+                                                     "ERA","WHIP","IP","OPS","HR/9","SO/BB","ERA",
+                                                     "WHIP","G","IP","TBF","IP/G","TBF/G"), 
+                                                   th)
+                                            )
+                                         )
+                                      )
+                                  )
+
+# display table
+DT::datatable(Final_Table_Teams, 
+              container = sketch3, rownames = FALSE,  
+              options=list(autoWidth = TRUE, 
+                           columnDefs = list(list(width = '110px', targets = 0),
+                                             list(width = '10px', targets = 2:8),
+                                             list(width = '10px', targets = 9:18),
+                                             list(className = 'dt-right', targets = 10:13)),
+                           scrollX = TRUE,
+                           initComplete = htmlwidgets::JS(
+                "function(settings, json) {",
+                paste0("$(this.api().table().container()).css({'font-size': '", font.size, "'});"),
+                "}"))) %>% 
+  formatRound(c(c(4:8),c(10:14)),3) %>%
+  formatRound(c(c(3,9),c(18:19)),1) %>%
+  formatStyle(c(2,8,14), `border-right` = "solid 2px")
+```
+If a franchise corners the market on undervalued relievers, its relievers will be in high demand ahead of the trade deadline when the rest of the league tries to add generalist relievers to accommodate the new rule. Using these now undervalued — but future overvalued (as markets tend to overcorrect) — relievers as trade pieces would allow a franchise to trade for prospects and improve its farm system.
+
+Exposing this market inefficiency will benefit franchises both in 2020 and in future seasons. The 2020 benefit is because franchises will improve their bullpen and win more games. The future season benefit is because franchises trade these players to strengthen their farm systems.
+
+---
+
+## Discussion
+Let's investigate which teams could most benefit from adding one of these currently undervalued relievers. Using the 2020 Playoff Odds projections from FanGraphs, 17/30 teams had at least a 25% chance of making the playoffs.   
+
+Of these strong playoff contenders, only five (Atlanta, Los Angeles Dodgers, Oakland, San Diego, Tampa Bay) teams have at least two relievers who both have strong splits and are durable. Adding relievers will bolster their pens and increase their playoff chances in future seasons.
+
+Similarly, five rebuilding franchises have these undervalued relievers in their bullpen:
+
+* Colorado: Scott Oberg (free agent after 2023)   
+* Kansas City: Ian Kennedy (2020)   
+* San Francisco: Reyes Moronta (2023), Trevor Gott (2023)   
+* Toronto: Ken Giles (2020)   
+
+Franchises built to win now would be served well by signing Kennedy and Giles as free agents and trading for Oberg, Moronta, and Gott.
+
+---
+
+## Appendix
+**Statistics for all qualifying relievers**
+
+Scroll right to see the full table.
+```{r,echo=FALSE,message=FALSE}
+# include vs RHH info for all pitchers, even those who didn't meet the inning qualification
+All_RP_vs_RHH <- read_csv("All RP vs RHH.csv")
+cleaned_All_RP_vs_RHH <- All_RP_vs_RHH %>% 
+  select(c(Name,playerId,IP,RHH_OPS,`RHH_HR/9`,`RHH_SO/BB`,RHH_ERA,RHH_WHIP))
+
+# include G, BF info for all pitchers, even those who didn't meet the inning qualification
+All_Games_and_Batters_Faced <- read_csv("All Games and Batters Faced.csv", 
+                                    col_types = cols_only(G = col_guess(), IP = col_guess(), 
+                                                          Name = col_guess(), TBF = col_guess(), 
+                                                          playerid = col_guess()
+                                                          )
+                                        )
+cleaned_All_Games_and_Batters_Faced <- All_Games_and_Batters_Faced %>% 
+  mutate(`IP/G` = IP/G) %>% 
+  mutate(`TBF/G` = TBF/G)
+
+# build table
+All_Table <- left_join(cleaned_RP_vs_LHH,cleaned_All_RP_vs_RHH,by="playerId")
+All_Table <- left_join(All_Table,cleaned_All_Games_and_Batters_Faced,
+                       by=c("playerId" = "playerid")) %>% 
+  select(-c(Name.y,Name,playerId))
+
+# build aesthetics
+font.size_small <- "8pt"
+sketch4 = htmltools::withTags(table(class = 'display',
+                                   thead(tr(th(rowspan = 2, 'Pitcher'),
+                                            th(colspan = 6, 'vs LHH'),
+                                            th(colspan = 6, 'vs RHH'),
+                                            th(colspan = 5, 'Durability')),
+                                         tr(lapply(c("IP","OPS","HR/9","SO/BB","ERA","WHIP",
+                                                     "IP","OPS","HR/9","SO/BB","ERA","WHIP",
+                                                     "G","IP","TBF","IP/G","TBF/G"), 
+                                                   th)
+                                            )
+                                         )
+                                      )
+                                  )
+
+# display table
+DT::datatable(All_Table, 
+              container = sketch4, rownames = FALSE, 
+              options=list(autoWidth = TRUE, 
+                           columnDefs = list(list(width = '100px', targets = 0),
+                                             list(width = '6px', targets = 1:6),
+                                             list(width = '6px', targets = 7:13),
+                                             list(className = 'dt-right', targets = 9:12)),
+                           scrollX = TRUE,
+                           initComplete = htmlwidgets::JS(
+                "function(settings, json) {",
+                paste0("$(this.api().table().container()).css({'font-size': '", 
+                       font.size_small, "'});"),
+                "}"))) %>% 
+  formatRound(c("LHH_OPS","LHH_HR/9","LHH_SO/BB","LHH_ERA","LHH_WHIP","RHH_OPS",
+                "RHH_HR/9","RHH_SO/BB","RHH_ERA","RHH_WHIP"),3) %>% 
+  formatRound(c("TBF/G","IP/G"),1) %>%
+  formatStyle(c(1,7,13), `border-right` = "solid 2px")
+```
