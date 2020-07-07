@@ -1,0 +1,9 @@
+name: "Noah Beam"
+output_dir: "."
+navbar:
+  title: "Noah Beam"
+  left:
+    - text: "About"
+      href: index.html
+    - text: "Three Batter Rule"
+      href: ThreeBatterRule.html
