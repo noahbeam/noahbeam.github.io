@@ -10,3 +10,9 @@ navbar:
       href: ThreeBatterRule.html
     - text: "Washington Post Video Analysis"
       href: WashingtonPost.html
+      
+output:
+  html_document:
+    theme: cerulean
+    highlight: tango
+    code_folding: show
