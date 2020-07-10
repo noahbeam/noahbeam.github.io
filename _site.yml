@@ -15,4 +15,3 @@ output:
   html_document:
     theme: cerulean
     highlight: tango
-    code_folding: show
