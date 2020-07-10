@@ -22,12 +22,12 @@ Using their data tables, I investigated why and propose some solutions
 
 ```{r, include=FALSE}
 # Load and clean Traffic
-Traffic <- read_excel("Video Starts Simulation Data 5_20 (1).xlsx")
+Traffic <- read_excel("Data/Video Starts Simulation Data 5_20 (1).xlsx")
 Traffic <-
   Traffic %>% 
   rename("Unique_Visitors" = `Unique Visitors`)
 # Load and clean VideoStarts
-VideoStarts <- read_excel("Video Starts Simulation Data 5_20 (1).xlsx",
+VideoStarts <- read_excel("Data/Video Starts Simulation Data 5_20 (1).xlsx",
                           sheet = "TWP Video Starts", 
                           col_types = c("date", "numeric", "numeric", "numeric",
                                         "numeric", "numeric", "numeric", "numeric", 
@@ -37,7 +37,7 @@ VideoStarts[is.na(VideoStarts)] <- 0
 colnames(VideoStarts) <- c("Month", "wapo.com","WaPo_Apps","Total","Facebook",
                            "YouTube","AppleNews","AOL","MSN")
 # Load and clean VideoStarts_SiteArea
-VideoStarts_SiteArea <- read_excel("Video Starts Simulation Data 5_20 (1).xlsx",
+VideoStarts_SiteArea <- read_excel("Data/Video Starts Simulation Data 5_20 (1).xlsx",
                                    sheet = "Video Starts by Site Area",
                                    col_types = c("date", "numeric", "numeric",
                                                  "numeric", "numeric", "numeric"),
@@ -45,10 +45,10 @@ VideoStarts_SiteArea <- read_excel("Video Starts Simulation Data 5_20 (1).xlsx",
 colnames(VideoStarts_SiteArea) <- c("Month","VideoStarts","Homepage",
                                     "ArticlePages","VideoPages","Others")
 # Load and clean VideoStarts_Hour_Mobile
-VideoStarts_Hour_Mobile <- read_excel("Video Starts Simulation Data 5_20 (1).xlsx",
+VideoStarts_Hour_Mobile <- read_excel("Data/Video Starts Simulation Data 5_20 (1).xlsx",
                                       sheet = "Video Starts by Hour", range = "B3:Z13")
 # Load and clean VideoStarts_Hour_Desktop
-VideoStarts_Hour_Desktop <- read_excel("Video Starts Simulation Data 5_20 (1).xlsx",
+VideoStarts_Hour_Desktop <- read_excel("Data/Video Starts Simulation Data 5_20 (1).xlsx",
                                        sheet = "Video Starts by Hour", range = "AB3:AZ13",
                                        col_types = c("date", "numeric", "numeric",
                                                      "numeric", "numeric", "numeric",
@@ -60,7 +60,7 @@ VideoStarts_Hour_Desktop <- read_excel("Video Starts Simulation Data 5_20 (1).xl
                                                      "numeric", "numeric", "numeric",
                                                      "numeric"))
 # Load and clean VideoStarts_SiteSection
-VideoStarts_SiteSection <- read_excel("Video Starts Simulation Data 5_20 (1).xlsx",
+VideoStarts_SiteSection <- read_excel("Data/Video Starts Simulation Data 5_20 (1).xlsx",
                                       sheet = "Video Starts by Site Section",
                                       skip = 2)
 colnames(VideoStarts_SiteSection) <- c("Month","WP_PostTV","WP_Politics","WP_Local",
@@ -69,7 +69,7 @@ colnames(VideoStarts_SiteSection) <- c("Month","WP_PostTV","WP_Politics","WP_Loc
                                        "WP_Business","WP_Sports","WP_Entertainment",
                                        "Others","Total")
 # Load and clean Top1000Videos
-Top1000Videos <- read_excel("Video Starts Simulation Data 5_20 (1).xlsx",
+Top1000Videos <- read_excel("Data/Video Starts Simulation Data 5_20 (1).xlsx",
                             sheet = "Top 1000 Videos in 2017")
 colnames(Top1000Videos) <- c("VideoName","VideoStarts","Complete50%","Complete100%","Date")
 Top1000Videos <- 
@@ -83,7 +83,7 @@ Top1000Videos <- Top1000Videos %>%
 Top1000Videos <- Top1000Videos %>% 
   mutate(Month = month(Top1000Videos$Date))
 # Load and clean VideoStarts_ReferrerType
-VideoStarts_ReferrerType <- read_excel("Video Starts Simulation Data 5_20 (1).xlsx",
+VideoStarts_ReferrerType <- read_excel("Data/Video Starts Simulation Data 5_20 (1).xlsx",
                                        sheet = "Video Starts by Referrer Type",
                                        col_types = c("date", "numeric", "numeric",
                                                      "numeric", "numeric", "numeric",
@@ -103,7 +103,7 @@ VideoStarts_ReferrerType <-
          ReferralConversion = VideoStarts_OtherWebSites/Referrals_OtherWebSites,
          SearchConversion = VideoStarts_Search/Referrals_Search)
 # Load and clean VideoStarts_FBandGoogle
-VideoStarts_FBandGoogle <- read_excel("Video Starts Simulation Data 5_20 (1).xlsx",
+VideoStarts_FBandGoogle <- read_excel("Data/Video Starts Simulation Data 5_20 (1).xlsx",
                                       sheet = "Video Starts from FB & Google",
                                       col_types = c("date", "numeric", "numeric",
                                                     "numeric", "numeric"), skip = 3)
@@ -116,10 +116,10 @@ VideoStarts_FBandGoogle <-
          FacebookConversion = Facebook_VideoStarts/Facebook_Referrals,
          TotalConversion = ((Google_VideoStarts + Facebook_VideoStarts)/(Google_Referrals + Facebook_Referrals)))
 # Load and clean VideosProduced
-VideosProduced <- read_excel("Video Starts Simulation Data 5_20 (1).xlsx",
+VideosProduced <- read_excel("Data/Video Starts Simulation Data 5_20 (1).xlsx",
                              sheet = "Videos Produced")
 # Load and clean Video_PreRollAds
-Video_PreRollAds <- read_excel("Video Starts Simulation Data 5_20 (1).xlsx",
+Video_PreRollAds <- read_excel("Data/Video Starts Simulation Data 5_20 (1).xlsx",
                                sheet = "Pre-roll Ads on Videos", 
                                col_types = c("date","numeric", "numeric", 
                                              "numeric","numeric", "numeric"))

@@ -51,11 +51,11 @@ Two key lessons may be gleaned from this table.
 Having established the importance of success against both LHHs and RHHs, I pulled pitcher splits data (e.g. opponent OPS) to identify which relievers are above-average against both LHH and RHH. These relievers are likely to be undervalued in the current market, and List 1 will be relievers with better than average LHH/RHH splits.
 
 ```{r,echo=FALSE,results='hide',message=FALSE,warning=FALSE}
-RP_vs_LHH <- read_csv("Splits Leaderboard Data vs LHH as RP.csv", 
+RP_vs_LHH <- read_csv("Data/Splits Leaderboard Data vs LHH as RP.csv", 
                       col_types = cols(`LHH_SO/BB` = col_double())
                       )
 cleaned_RP_vs_LHH <- RP_vs_LHH %>% select(c(Name,playerId,IP,LHH_OPS,`LHH_HR/9`,`LHH_SO/BB`,LHH_ERA,LHH_WHIP))
-RP_vs_RHH <- read_csv("Splits Leaderboard Data vs RHH as RP.csv")
+RP_vs_RHH <- read_csv("Data/Splits Leaderboard Data vs RHH as RP.csv")
 cleaned_RP_vs_RHH <- RP_vs_RHH %>%
   select(c(Name,playerId,IP,RHH_OPS,`RHH_HR/9`,
            `RHH_SO/BB`,RHH_ERA,RHH_WHIP))
@@ -130,7 +130,7 @@ However, Diekman will not meet the durability requirements of 2019, but that cou
 ## Part 2: Durability
 The second aspect of altered value is durability — relievers likely will throw more pitches per appearance, so we should investigate the ability of relievers to pitch consecutive days under this new rule. After pulling data on batters faced by relievers, we want to focus our attention on relievers whose mean batters faced was at least three and mean IP was at least one. 
 ```{r,echo=FALSE,results='hide'}
-Games_and_Batters_Faced <- read_csv("Games and Batters Faced.csv", 
+Games_and_Batters_Faced <- read_csv("Data/Games and Batters Faced.csv", 
                                     col_types = cols_only(G = col_guess(), IP = col_guess(), 
                                                           Name = col_guess(), TBF = col_guess(), 
                                                           playerid = col_guess()
@@ -142,7 +142,7 @@ cleaned_Games_and_Batters_Faced <- Games_and_Batters_Faced %>%
 LessThanThreeBattersPerGame <- cleaned_Games_and_Batters_Faced %>% 
   filter(`TBF/G` < 3)
 LessThanThreeBattersPerGame$Name
-Game_Logs <- read_csv("Game Logs.csv", 
+Game_Logs <- read_csv("Data/Game Logs.csv", 
                       col_types = cols_only(Date = col_guess(), IP = col_guess(), 
                                             Name = col_guess(), TBF = col_guess(), 
                                             playerId = col_guess()
@@ -311,12 +311,12 @@ Franchises built to win now would be served well by signing Kennedy and Giles as
 Scroll right to see the full table.
 ```{r,echo=FALSE,message=FALSE}
 # include vs RHH info for all pitchers, even those who didn't meet the inning qualification
-All_RP_vs_RHH <- read_csv("All RP vs RHH.csv")
+All_RP_vs_RHH <- read_csv("Data/All RP vs RHH.csv")
 cleaned_All_RP_vs_RHH <- All_RP_vs_RHH %>% 
   select(c(Name,playerId,IP,RHH_OPS,`RHH_HR/9`,`RHH_SO/BB`,RHH_ERA,RHH_WHIP))
 
 # include G, BF info for all pitchers, even those who didn't meet the inning qualification
-All_Games_and_Batters_Faced <- read_csv("All Games and Batters Faced.csv", 
+All_Games_and_Batters_Faced <- read_csv("Data/All Games and Batters Faced.csv", 
                                     col_types = cols_only(G = col_guess(), IP = col_guess(), 
                                                           Name = col_guess(), TBF = col_guess(), 
                                                           playerid = col_guess()
