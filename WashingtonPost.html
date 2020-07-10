@@ -11,34 +11,20 @@
 
 <meta name="author" content="Noah Beam" />
 
+<meta name="date" content="2020-07-09" />
 
 <title>Washington Post Video Analysis</title>
 
 <script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<link href="site_libs/bootstrap-3.3.5/css/bootstrap.min.css" rel="stylesheet" />
+<link href="site_libs/bootstrap-3.3.5/css/cerulean.min.css" rel="stylesheet" />
 <script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
 <script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
 <script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
 <script src="site_libs/navigation-1.1/tabsets.js"></script>
-<link href="site_libs/highlightjs-9.12.0/default.css" rel="stylesheet" />
-<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+<script src="site_libs/navigation-1.1/codefolding.js"></script>
+<script src="site_libs/accessible-code-block-0.0.1/empty-anchor.js"></script>
 
-<style type="text/css">code{white-space: pre;}</style>
-<style type="text/css">
-  pre:not([class]) {
-    background-color: white;
-  }
-</style>
-<script type="text/javascript">
-if (window.hljs) {
-  hljs.configure({languages: []});
-  hljs.initHighlightingOnLoad();
-  if (document.readyState && document.readyState === "complete") {
-    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
-  }
-}
-</script>
 
 
 
@@ -246,6 +232,9 @@ $(document).ready(function () {
 </style>
 
 <!-- code folding -->
+<style type="text/css">
+.code-folding-btn { margin-bottom: 4px; }
+</style>
 
 
 
@@ -291,17 +280,25 @@ $(document).ready(function () {
 
 <div class="fluid-row" id="header">
 
+<div class="btn-group pull-right">
+<button type="button" class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><span>Code</span> <span class="caret"></span></button>
+<ul class="dropdown-menu" style="min-width: 50px;">
+<li><a id="rmd-show-all-code" href="#">Show All Code</a></li>
+<li><a id="rmd-hide-all-code" href="#">Hide All Code</a></li>
+</ul>
+</div>
+
 
 
 <h1 class="title toc-ignore">Washington Post Video Analysis</h1>
 <h4 class="author">Noah Beam</h4>
-<h4 class="date">7/9/2020</h4>
+<h4 class="date">July 9, 2020</h4>
 
 </div>
 
 
 <p>Video Starts for the Washington Post decreased from September 2016 to 2017. Using their data tables, I investigated why and propose some solutions</p>
-<p><img src="WashingtonPost_files/figure-html/unnamed-chunk-2-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p><img src="WashingtonPost_files/figure-html/unnamed-chunk-2-1.png" style="display: block; margin: auto;" /></p>
 <p>Overall, video starts decreased from September 2017 to October 2017 by 38.5%, as shown in the graph below. WaPo App starts decreased only 3% while wapo.com decreased 40%. We can see the mean Video Starts from January 2016 to September 2017 as the red line. Video Starts fluctuates constantly, so we should not be too alarmed by the drop. But let’s dig into what we’re seeing and find some drivers and solutions.</p>
 <div id="why-did-video-starts-drop-how-can-we-fix-it" class="section level2">
 <h2>Why did Video Starts drop? How can we fix it?</h2>
@@ -345,7 +342,7 @@ $(document).ready(function () {
 </div>
 <div id="appendix" class="section level2">
 <h2>Appendix</h2>
-<p><strong>Top 1000 Videos</strong> <img src="WashingtonPost_files/figure-html/unnamed-chunk-3-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p><strong>Top 1000 Videos</strong> <img src="WashingtonPost_files/figure-html/unnamed-chunk-3-1.png" style="display: block; margin: auto;" /></p>
 <pre><code>   Month VideosReleased
 1      1            150
 2      2            169
@@ -360,10 +357,10 @@ $(document).ready(function () {
 11    11             33
 12    12             34</code></pre>
 <p>Here we have the top 1000 videos shown by release month on the x-axis and log(starts) on the y. We used log(starts) to make it easier to read. Top videos decreases by month, which makes sense as videos released later in the year inherently are likely to have less starts because of less time remaining until EOY. The top two videos released in October were released towards the end of the month, on the 20th and 28th respectively. This reduces the time people could watch, and thereby the mean starts for the month of October compared to September. Conversely, the top six videos from September were released in the first third of the month.</p>
-<p><strong>Traffic</strong> <img src="WashingtonPost_files/figure-html/unnamed-chunk-4-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p><strong>Traffic</strong> <img src="WashingtonPost_files/figure-html/unnamed-chunk-4-1.png" style="display: block; margin: auto;" /></p>
 <p>Every base metric shows higher traffic in October than September, so traffic should not be the issue.</p>
 <p><strong>Video_PreRollAds</strong></p>
-<p><img src="WashingtonPost_files/figure-html/unnamed-chunk-7-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p><img src="WashingtonPost_files/figure-html/unnamed-chunk-7-1.png" style="display: block; margin: auto;" /></p>
 <ul>
 <li>Unique Visitors decreased 23.2%<br />
 </li>
@@ -376,7 +373,7 @@ $(document).ready(function () {
 <li>Starts with no pre-roll increased 318.8%</li>
 </ul>
 <p>Less unique visitors, but ad completion increased by 15.8% as well as starts w/o pre-roll. So, video ads are not causing the problem.</p>
-<p><strong>VideoStarts</strong> <img src="WashingtonPost_files/figure-html/unnamed-chunk-8-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p><strong>VideoStarts</strong> <img src="WashingtonPost_files/figure-html/unnamed-chunk-8-1.png" style="display: block; margin: auto;" /></p>
 <p>App video plays (solid blue) stays constant, wapo.com (solid pink) makes the difference for the total (solid purple) Also appears to follow a trend with MSN (dashed green). This prediction matches our correlation tests.</p>
 <table>
 <thead>
@@ -416,9 +413,9 @@ $(document).ready(function () {
 </tr>
 </tbody>
 </table>
-<p><strong>VideoStarts_FB_andGoogle</strong> <img src="WashingtonPost_files/figure-html/unnamed-chunk-10-1.png" width="672" style="display: block; margin: auto;" /> Google referrals dipped dramatically. Also, conversions from Google referrals (green dashed line) were half as successful. Both Google and Facebook (blue) decreased, but Google’s drop was incredibly steep.</p>
-<p><strong>VideoStarts_ReferrerType</strong> <img src="WashingtonPost_files/figure-html/unnamed-chunk-11-1.png" width="672" style="display: block; margin: auto;" /> Conversions for Direct (green), Social (blue), and Search (purple) all dropped significantly. Only OtherWebSites (yellow) stayed consistent at 9.6% for both months.</p>
-<p><strong>VideoStarts_SiteArea</strong> <img src="WashingtonPost_files/figure-html/unnamed-chunk-12-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p><strong>VideoStarts_FB_andGoogle</strong> <img src="WashingtonPost_files/figure-html/unnamed-chunk-10-1.png" style="display: block; margin: auto;" /> Google referrals dipped dramatically. Also, conversions from Google referrals (green dashed line) were half as successful. Both Google and Facebook (blue) decreased, but Google’s drop was incredibly steep.</p>
+<p><strong>VideoStarts_ReferrerType</strong> <img src="WashingtonPost_files/figure-html/unnamed-chunk-11-1.png" style="display: block; margin: auto;" /> Conversions for Direct (green), Social (blue), and Search (purple) all dropped significantly. Only OtherWebSites (yellow) stayed consistent at 9.6% for both months.</p>
+<p><strong>VideoStarts_SiteArea</strong> <img src="WashingtonPost_files/figure-html/unnamed-chunk-12-1.png" style="display: block; margin: auto;" /></p>
 <p>Everything but VideoPages (yellow) is a statistically significant predictor of VideoStarts (green):</p>
 <ul>
 <li>Homepage (blue)<br />
@@ -525,6 +522,11 @@ $(document).ready(function () {
 </script>
 
 <!-- code folding -->
+<script>
+$(document).ready(function () {
+  window.initializeCodeFolding("show" === "show");
+});
+</script>
 
 
 <!-- dynamically load mathjax for compatibility with self-contained -->
