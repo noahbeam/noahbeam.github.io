@@ -8,7 +8,7 @@ navbar:
       href: index.html
     - text: "Three Batter Rule"
       href: ThreeBatterRule.html
-    - text: "Washington Post Video Analysis"
+    - text: "Washington Post"
       href: WashingtonPost.html
       
 output:
