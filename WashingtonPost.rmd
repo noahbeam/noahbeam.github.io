@@ -1,0 +1,369 @@
+---
+title: "Washington Post Video Analysis"
+author: "Noah Beam"
+date: "7/9/2020"
+output:
+  html_document: default
+  pdf_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, comment = "", prompt = TRUE, collapse = TRUE, tidy=TRUE, fig.align = "center")
+library(tidyverse)
+library(readxl)
+library(lubridate)
+library(viridisLite)
+library(tinytex)
+setwd("~/Documents/Website")
+```
+
+Video Starts for the Washington Post decreased from September 2016 to 2017. 
+Using their data tables, I investigated why and propose some solutions
+
+```{r, include=FALSE}
+# Load and clean Traffic
+Traffic <- read_excel("Video Starts Simulation Data 5_20 (1).xlsx")
+Traffic <-
+  Traffic %>% 
+  rename("Unique_Visitors" = `Unique Visitors`)
+# Load and clean VideoStarts
+VideoStarts <- read_excel("Video Starts Simulation Data 5_20 (1).xlsx",
+                          sheet = "TWP Video Starts", 
+                          col_types = c("date", "numeric", "numeric", "numeric",
+                                        "numeric", "numeric", "numeric", "numeric", 
+                                        "numeric"), 
+                          skip = 2)
+VideoStarts[is.na(VideoStarts)] <- 0
+colnames(VideoStarts) <- c("Month", "wapo.com","WaPo_Apps","Total","Facebook",
+                           "YouTube","AppleNews","AOL","MSN")
+# Load and clean VideoStarts_SiteArea
+VideoStarts_SiteArea <- read_excel("Video Starts Simulation Data 5_20 (1).xlsx",
+                                   sheet = "Video Starts by Site Area",
+                                   col_types = c("date", "numeric", "numeric",
+                                                 "numeric", "numeric", "numeric"),
+                                   n_max = 10)
+colnames(VideoStarts_SiteArea) <- c("Month","VideoStarts","Homepage",
+                                    "ArticlePages","VideoPages","Others")
+# Load and clean VideoStarts_Hour_Mobile
+VideoStarts_Hour_Mobile <- read_excel("Video Starts Simulation Data 5_20 (1).xlsx",
+                                      sheet = "Video Starts by Hour", range = "B3:Z13")
+# Load and clean VideoStarts_Hour_Desktop
+VideoStarts_Hour_Desktop <- read_excel("Video Starts Simulation Data 5_20 (1).xlsx",
+                                       sheet = "Video Starts by Hour", range = "AB3:AZ13",
+                                       col_types = c("date", "numeric", "numeric",
+                                                     "numeric", "numeric", "numeric",
+                                                     "numeric", "numeric", "numeric",
+                                                     "numeric", "numeric", "numeric",
+                                                     "numeric", "numeric", "numeric",
+                                                     "numeric", "numeric", "numeric",
+                                                     "numeric", "numeric", "numeric",
+                                                     "numeric", "numeric", "numeric",
+                                                     "numeric"))
+# Load and clean VideoStarts_SiteSection
+VideoStarts_SiteSection <- read_excel("Video Starts Simulation Data 5_20 (1).xlsx",
+                                      sheet = "Video Starts by Site Section",
+                                      skip = 2)
+colnames(VideoStarts_SiteSection) <- c("Month","WP_PostTV","WP_Politics","WP_Local",
+                                       "WP_National","WP_Opinions","WP_Lifestyle",
+                                       "WP_World","WP_Homepage","WP_Powerpost",
+                                       "WP_Business","WP_Sports","WP_Entertainment",
+                                       "Others","Total")
+# Load and clean Top1000Videos
+Top1000Videos <- read_excel("Video Starts Simulation Data 5_20 (1).xlsx",
+                            sheet = "Top 1000 Videos in 2017")
+colnames(Top1000Videos) <- c("VideoName","VideoStarts","Complete50%","Complete100%","Date")
+Top1000Videos <- 
+  Top1000Videos %>% 
+  mutate(Date = str_extract(VideoName,
+                            '([:digit:]+[:punct:][:digit:]+[:punct:][:digit:]+)'))
+Top1000Videos <- Top1000Videos %>% 
+  mutate(Date = (as.Date(Top1000Videos$Date, '%m/%d/%y')))
+Top1000Videos <- Top1000Videos %>% 
+  mutate(Date = ymd(Top1000Videos$Date) - years(3))
+Top1000Videos <- Top1000Videos %>% 
+  mutate(Month = month(Top1000Videos$Date))
+# Load and clean VideoStarts_ReferrerType
+VideoStarts_ReferrerType <- read_excel("Video Starts Simulation Data 5_20 (1).xlsx",
+                                       sheet = "Video Starts by Referrer Type",
+                                       col_types = c("date", "numeric", "numeric",
+                                                     "numeric", "numeric", "numeric",
+                                                     "numeric", "numeric", "numeric"),
+                                       skip = 2)
+VideoStarts_ReferrerType <- VideoStarts_ReferrerType[-11,]
+colnames(VideoStarts_ReferrerType) <- c("Month","VideoStarts_Direct", 
+                                        "VideoStarts_Social",
+                                        "VideoStarts_OtherWebSites",
+                                        "VideoStarts_Search","Referrals_Direct", 
+                                        "Referrals_Social","Referrals_OtherWebSites",
+                                        "Referrals_Search")
+VideoStarts_ReferrerType <-
+  VideoStarts_ReferrerType %>% 
+  mutate(DirectConversion = VideoStarts_Direct/Referrals_Direct,
+         SocialConversion = VideoStarts_Social/Referrals_Social,
+         ReferralConversion = VideoStarts_OtherWebSites/Referrals_OtherWebSites,
+         SearchConversion = VideoStarts_Search/Referrals_Search)
+# Load and clean VideoStarts_FBandGoogle
+VideoStarts_FBandGoogle <- read_excel("Video Starts Simulation Data 5_20 (1).xlsx",
+                                      sheet = "Video Starts from FB & Google",
+                                      col_types = c("date", "numeric", "numeric",
+                                                    "numeric", "numeric"), skip = 3)
+VideoStarts_FBandGoogle <- VideoStarts_FBandGoogle[-11,]
+colnames(VideoStarts_FBandGoogle) <- c("Month","Google_VideoStarts","Facebook_VideoStarts",
+                                       "Google_Referrals","Facebook_Referrals")
+VideoStarts_FBandGoogle <- 
+  VideoStarts_FBandGoogle %>% 
+  mutate(GoogleConversion = Google_VideoStarts/Google_Referrals,
+         FacebookConversion = Facebook_VideoStarts/Facebook_Referrals,
+         TotalConversion = ((Google_VideoStarts + Facebook_VideoStarts)/(Google_Referrals + Facebook_Referrals)))
+# Load and clean VideosProduced
+VideosProduced <- read_excel("Video Starts Simulation Data 5_20 (1).xlsx",
+                             sheet = "Videos Produced")
+# Load and clean Video_PreRollAds
+Video_PreRollAds <- read_excel("Video Starts Simulation Data 5_20 (1).xlsx",
+                               sheet = "Pre-roll Ads on Videos", 
+                               col_types = c("date","numeric", "numeric", 
+                                             "numeric","numeric", "numeric"))
+Video_PreRollAds <-
+  Video_PreRollAds %>% 
+  rename("UV" = `Video UV`, 
+         "Ad_Starts" = `Video Ad Starts`, 
+         "Ad_Skipped" = `Video - Ad Skipped`,
+         "Ad_Complete" = `Video Ad Complete`,
+         "Starts_with_no_Pre_roll" = `Video Starts with no Pre-roll`)
+```
+
+```{r, echo = FALSE, message = FALSE, warning = FALSE, fig.width=7, fig.height=3}
+ggplot(data = VideoStarts, aes(x = Month, y = log(Total))) +
+  geom_line() +
+  labs(y = "(log) Video Starts", 
+       title = "Video Starts by Month", 
+       subtitle = "January 2016 to September 2017") +
+  geom_hline(yintercept = mean(log(VideoStarts$Total)), col = 'red')
+```
+
+Overall, video starts decreased from September 2017 to October 2017 by 38.5%,
+as shown in the graph below. WaPo App starts decreased only 3% while wapo.com decreased 40%. We can see the mean Video Starts from January 2016 to September 2017 as the red line. Video Starts fluctuates constantly, so we should not be too alarmed by the drop. But let's dig into what we're seeing and find some drivers and solutions.
+
+## Why did Video Starts drop? How can we fix it?
+
+**Drivers** 
+
+1. Top two videos for the month of October were released at the end of the month.     
+    + This gives less time in the month of October for videos to be started.  
+    + Conversely, the top six videos in September were released in the first third of the month   
+    + This is not something to fix, however, as we are at the whim of current events.  
+
+
+2. Conversions from Google and Facebook referrals dropped dramatically.   
+    + Google dropped from 9.9% conversion on referrals to 5.0%    
+    + Facebook dropped from 7.0% to 5.5%    
+    + Both platforms served less referrals from September to October    
+    + Overall, conversion from Direct, Social, and Search decreased significantly   
+
+
+3. Video starts from both 'Article Pages' and 'Others' spiked abnormally in September before   returning to normal in October.    
+    + Video Starts are significantly impacted by starts from Article Pages and 'Others'   
+    + WashingtonPost_TV is an important driver of video starts and decreased significantly from September to October   
+    + Local as well is an important driver and decreased significantly, losing over 3m video starts from September to October. September 2017 was Hurricane Harvey, though, and probablythe cause of September's spike in 'Local' video starts
+
+
+**Recommendations**  
+
+1. PostTV, Politics, Lifestyle have the highest correlation to overall VideoStarts. Collaborate with the video staff to emphaszie these videos 
+2. Use SEO to increase quantity and quality of Google referrals  
+3. Hosting videos on MSN, AOL, other 3rd party sites might increase overall video starts, but it detracts overall traffic from the website because people don't continue browsing. Using cost analysis, determine the worth of hosting videos on 3rd party sites.
+
+-----------------
+
+## Appendix
+
+**Top 1000 Videos**
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+Top1000Videos %>% 
+  ggplot(aes(group=Month, x = Month, y = log(VideoStarts))) +
+  geom_boxplot() +
+  #geom_jitter() +
+  #geom_point(aes(group = Month, x = Month, y = median(log(VideoStarts))), color = 'red') +
+  labs(title = "Top 1000 Videos", subtitle = "Release Month & Number of Starts", y = "Log-Scaled # of Starts")
+as.data.frame(table(Top1000Videos$Month)) %>% rename("Month" = Var1, "VideosReleased" = Freq)
+```
+Here we have the top 1000 videos shown by release month on the x-axis and log(starts) on the y. 
+We used log(starts) to make it easier to read. 
+Top videos decreases by month, which makes sense as videos released later in the year inherently are likely to have less starts because of less time remaining until EOY.
+The top two videos released in October were released towards the end of the month, on the 20th and 28th respectively. 
+This reduces the time people could watch, and thereby the mean starts for the month of October compared to September.
+Conversely, the top six videos from September were released in the first third of the month.
+
+
+
+**Traffic**
+```{r, echo=FALSE, message=FALSE}
+Traffic %>% 
+  ggplot() +
+  geom_line(aes(x = Month, y = Unique_Visitors), col= 'blue') +
+  geom_line(aes(x = Month, y = Visits), col = 'yellow') +
+  geom_line(aes(x = Month, y = Pageviews), col = 'violet')
+```
+```{r, include=FALSE}
+Traffic[9,2] - Traffic[10,2]
+Traffic[9,3] - Traffic[10,3]
+Traffic[9,4] - Traffic[10,4]
+```
+Every base metric shows higher traffic in October than September, 
+so traffic should not be the issue.
+
+**Video_PreRollAds**
+```{r, include=FALSE}
+100*(Video_PreRollAds[10,2] - Video_PreRollAds[9,2]) / Video_PreRollAds[9,2]
+100*(Video_PreRollAds[10,3] - Video_PreRollAds[9,3]) / Video_PreRollAds[9,3]
+100*(Video_PreRollAds[10,4] - Video_PreRollAds[9,4]) / Video_PreRollAds[9,4]
+100*(Video_PreRollAds[10,5] - Video_PreRollAds[9,5]) / Video_PreRollAds[9,5]
+100*(Video_PreRollAds[10,6] - Video_PreRollAds[9,6]) / Video_PreRollAds[9,6]
+(Video_PreRollAds[9,5] / Video_PreRollAds[9,3]) - (Video_PreRollAds[10,5] / Video_PreRollAds[10,3])
+```
+
+```{r, echo=FALSE, message=FALSE}
+Video_PreRollAds %>% 
+  ggplot() +
+  geom_line(aes(x = Month, y = UV), col= 'violet') +
+  geom_line(aes(x = Month, y = Ad_Starts), col = 'yellow') +
+  geom_line(aes(x = Month, y = Ad_Skipped), col = 'green') +
+  geom_line(aes(x = Month, y = Ad_Complete), col = 'blue') +
+  geom_line(aes(x = Month, y = Starts_with_no_Pre_roll), col = 'red')
+```
+ 
+ * Unique Visitors decreased 23.2%    
+ * Ad Starts decreased 7.3%    
+ * Ad Skipped decreased 15.4%    
+ * Ad Complete increased 16.0%    
+ * Starts with no pre-roll increased 318.8%    
+
+Less unique visitors, but ad completion increased by 15.8% as well as starts w/o pre-roll.
+So, video ads are not causing the problem.
+
+**VideoStarts**
+```{r, echo=FALSE}
+VideoStarts %>% 
+  ggplot(aes(x = Month)) +
+  geom_line(aes(y = wapo.com), col = 'pink') +
+  geom_line(aes(y = WaPo_Apps), col = 'blue') +
+  geom_line(aes(y = Total), col = 'purple') +
+  geom_line(aes(y = Facebook), col = 'blue', lty = 3) +
+  geom_line(aes(y = YouTube), col = 'red', lty = 3) +
+  geom_line(aes(y = AppleNews), col = 'grey', lty = 3) +
+  geom_line(aes(y = AOL), col = 'yellow', lty = 3) +
+  geom_line(aes(y = MSN), col ='green', lty = 3)
+```
+```{r, include=FALSE}
+cor.test(VideoStarts$Total,VideoStarts$wapo.com)
+cor.test(VideoStarts$Total,VideoStarts$WaPo_Apps)
+cor.test(VideoStarts$Total,VideoStarts$Facebook)
+cor.test(VideoStarts$Total,VideoStarts$YouTube)
+cor.test(VideoStarts$Total,VideoStarts$AppleNews)
+cor.test(VideoStarts$Total,VideoStarts$AOL)
+cor.test(VideoStarts$Total,VideoStarts$MSN)
+```
+App video plays (solid blue) stays constant, wapo.com (solid pink) makes the difference
+for the total (solid purple)
+Also appears to follow a trend with MSN (dashed green).
+This prediction matches our correlation tests.   
+
+Variable  | Correlation w/ Total  
+--------- | -------------  
+wapo.com  | `r cor(VideoStarts$Total,VideoStarts$wapo.com)`   
+WaPo_Apps | `r cor(VideoStarts$Total,VideoStarts$WaPo_Apps)`   
+Facebook  | `r cor(VideoStarts$Total,VideoStarts$Facebook)`   
+YouTube   | `r cor(VideoStarts$Total,VideoStarts$YouTube)`   
+AppleNews | `r cor(VideoStarts$Total,VideoStarts$AppleNews)`   
+AOL       | `r cor(VideoStarts$Total,VideoStarts$AOL)`   
+MSN       | `r cor(VideoStarts$Total,VideoStarts$MSN)`   
+
+**VideoStarts_FB_andGoogle**
+```{r, echo=FALSE, message=FALSE}
+VideoStarts_FBandGoogle %>% 
+  ggplot(aes(x = Month)) +
+  #geom_line(aes(y = Google_VideoStarts), col = 'green', lty = 1) +
+  #geom_line(aes(y = Facebook_VideoStarts), col = 'blue', lty = 1) +
+  #geom_line(aes(y = Google_Referrals), col = 'green', lty = 3) +
+  #geom_line(aes(y = Facebook_Referrals), col = 'blue', lty = 3) +
+  geom_line(aes(y = GoogleConversion), col = 'green', lty = 4) +
+  geom_line(aes(y = FacebookConversion), col = 'blue', lty = 4)
+```
+Google referrals dipped dramatically. 
+Also, conversions from Google referrals (green dashed line) were half as successful.
+Both Google and Facebook (blue) decreased, but Google's drop was incredibly steep.
+
+**VideoStarts_ReferrerType**
+```{r, echo=FALSE, message=FALSE}
+VideoStarts_ReferrerType %>% 
+  ggplot(aes(x = Month)) +
+  geom_line(aes(y = DirectConversion), col = 'green') +
+  geom_line(aes(y = SocialConversion), col = 'blue') +
+  geom_line(aes(y = ReferralConversion), col = 'orange') +
+  geom_line(aes(y = SearchConversion), col = 'purple')
+```
+Conversions for Direct (green), Social (blue), and Search (purple) all dropped significantly.
+Only OtherWebSites (yellow) stayed consistent at 9.6% for both months.
+
+**VideoStarts_SiteArea**
+```{r, echo=FALSE, message=FALSE}
+VideoStarts_SiteArea %>% 
+  ggplot(aes(x = Month)) +
+  geom_line(aes(y = VideoStarts), col = 'green') +
+  geom_line(aes(y = Homepage), col = 'blue') +
+  geom_line(aes(y = ArticlePages), col = 'black') +
+  geom_line(aes(y = VideoPages), col = 'yellow') +
+  geom_line(aes(y = Others), col = 'red')
+```
+```{r, include=FALSE}
+summary(lm(data = VideoStarts_SiteArea,
+           VideoStarts ~ Homepage + ArticlePages + VideoPages + Others))
+summary(lm(data = VideoStarts_SiteArea,
+           VideoStarts ~ Homepage + ArticlePages + Others))
+summary(lm(data = VideoStarts_SiteArea,
+           VideoStarts ~ ArticlePages + Others))
+```
+Everything but VideoPages (yellow) is a statistically significant predictor of VideoStarts (green):  
+
+ * Homepage (blue)  
+ * ArticlePages (black)  
+ * Others (red)  
+
+
+**VideoStarts_SiteSection**
+```{r, include=FALSE}
+VideoStarts_SiteSection %>% 
+  ggplot(aes(x = Month)) +
+  geom_line(aes(y = WP_PostTV)) +
+  geom_line(aes(y = WP_Politics)) +
+  geom_line(aes(y = WP_Local)) +
+  geom_line(aes(y = WP_National)) +
+  geom_line(aes(y = WP_Opinions)) +
+  geom_line(aes(y = WP_Lifestyle)) +
+  geom_line(aes(y = WP_World)) +
+  geom_line(aes(y = WP_Homepage)) +
+  geom_line(aes(y = WP_Powerpost)) +
+  geom_line(aes(y = WP_Business)) +
+  geom_line(aes(y = WP_Sports)) +
+  geom_line(aes(y = WP_Entertainment)) +
+  geom_line(aes(y = Others)) +
+  geom_line(aes(y = Total))
+```
+
+
+Variable         | Correlation w/ Total  
+---------------- | -------------  
+WP_PostTV        | `r cor(VideoStarts_SiteSection$Total,VideoStarts_SiteSection$WP_PostTV)`  
+WP_Politics      | `r cor(VideoStarts_SiteSection$Total,VideoStarts_SiteSection$WP_Politics)`  
+WP_Local         | `r cor(VideoStarts_SiteSection$Total,VideoStarts_SiteSection$WP_Local)`  
+WP_National      | `r cor(VideoStarts_SiteSection$Total,VideoStarts_SiteSection$WP_National)`  
+WP_Opinions      | `r cor(VideoStarts_SiteSection$Total,VideoStarts_SiteSection$WP_Opinions)`  
+WP_Lifestyle     | `r cor(VideoStarts_SiteSection$Total,VideoStarts_SiteSection$WP_Lifestyle)`  
+WP_World         | `r cor(VideoStarts_SiteSection$Total,VideoStarts_SiteSection$WP_World)`  
+WP_Homepage      | `r cor(VideoStarts_SiteSection$Total,VideoStarts_SiteSection$WP_Homepage)`  
+WP_Powerpost     | `r cor(VideoStarts_SiteSection$Total,VideoStarts_SiteSection$WP_Powerpost)`  
+WP_Business      | `r cor(VideoStarts_SiteSection$Total,VideoStarts_SiteSection$WP_Business)`  
+WP_Sports        | `r cor(VideoStarts_SiteSection$Total,VideoStarts_SiteSection$WP_Sports)`  
+WP_Entertainment | `r cor(VideoStarts_SiteSection$Total,VideoStarts_SiteSection$WP_Entertainment)`  
+Others           | `r cor(VideoStarts_SiteSection$Total,VideoStarts_SiteSection$Others)`  
+

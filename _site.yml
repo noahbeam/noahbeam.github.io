@@ -2,8 +2,11 @@ name: "Noah Beam"
 output_dir: "."
 navbar:
   title: "Noah Beam"
+  theme: "cerulean"
   left:
     - text: "About"
       href: index.html
     - text: "Three Batter Rule"
       href: ThreeBatterRule.html
+    - text: "Washington Post Video Analysis"
+      href: WashingtonPost.html
