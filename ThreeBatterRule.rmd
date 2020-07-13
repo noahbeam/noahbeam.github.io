@@ -18,7 +18,7 @@ library(kableExtra)
 library(DT)
 library(janitor)
 library(data.table)
-setwd("~/Documents/Website")
+#setwd("~/Documents/Website")
 ```
 
 The game of baseball constantly changes through technological advancements, shifting styles of play, new rules, and more. MLB’s new three-batter rule states that pitchers must “either face a minimum of three batters in an appearance or pitch to the end of a half-inning, with exceptions for injuries and illnesses” (MLB.com). MLB’s new three-batter minimum rule will change the game for both batters and pitchers. Batters will encounter more favorable matchups against relievers and lineup structures eventually will adjust, and the new rule will impact the market for relievers.

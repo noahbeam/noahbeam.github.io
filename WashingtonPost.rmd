@@ -14,7 +14,7 @@ library(readxl)
 library(lubridate)
 library(viridisLite)
 library(tinytex)
-setwd("~/Documents/Website")
+#setwd("~/Documents/Website")
 ```
 
 Video Starts for the Washington Post decreased from September 2016 to 2017. 
