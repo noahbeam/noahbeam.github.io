@@ -254,7 +254,7 @@ DT::datatable(Defense_Display,
               3)
 ```
 
-I cannot say with confidence how much Jeff Mathis helps behind the plate, or even if he helps at all based on 2019 stats. Even the Rangers' best defensive catcher is worth less than 0.75 wins. If anything, our defense stats say that Trevino should start the game defensively and give way to Chirinos, with Mathis serving only as an emergency catcher. However, I cannot say that confidently.
+I cannot say with confidence how much Jeff Mathis helps behind the plate, or even if he helps at all based on 2019 stats. Even the Rangers' best defensive catcher is worth less than 0.75 wins. If anything, the stats say that Trevino should start the game defensively and give way to Chirinos, with Mathis serving only as an emergency catcher. However, I cannot say that confidently. Part of the beauty of baseball is the intangibles, and I cannot say how much SPs prefer Mathis (or other catchers) nor can I quantify the intangible of a consistent catcher. But the data from FanGraphs and Baseball Prospectus suggest it's minimal in this context.
 
 What I can say confidently is this: **Jeff Mathis should never bat**. Giving four PAs/game to Chirinos instead of Mathis increases the Rangers' offensive win probability by 3.2 games to 33.3 games.
 
