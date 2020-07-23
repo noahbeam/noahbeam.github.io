@@ -1,0 +1,263 @@
+---
+title: "Jeff Mathis Should Never Bat"
+author: "Noah Beam"
+date: "7/22/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+library(readr)
+library(tidyverse)
+library(DT)
+library(ggplot2)
+library(plotly)
+ProjectedRangers2020Lineup_2019Stats <- read_csv("Data/ProjectedRangers2020Lineup_2019Stats.csv")
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Disclaimer: Jeff Mathis is a great defensive catcher and deserves a spot on the 2020 Texas Rangers roster.
+
+With that out of the way, let's look at how destructive Jeff Mathis is for the Texas Rangers *offense*.
+
+### Expected 2020 Texas Rangers Roster
+
+The official season is a few days away, but rosters are nearly established. Particularly, the roster for the Texas Rangers won't include any surprising names. For this analysis, I included every player with a solid chance at making the Opening Day roster, which consists of these players...
+
+*Catchers*  
+
+* Robinson Chirinos  
+* Jeff Mathis  
+* Jose Trevino  
+
+*Infielders*  
+
+* Elvis Andrus 
+* Todd Frazier  
+* Ronald Guzman  
+* Isiah Kiner-Falefa 
+* Rougned Odor  
+
+*Outfielders*  
+
+* Willie Calhoun  
+* Shin-Soo Choo
+* Joey Gallo  
+* Scott Heineman  
+
+*Utility*  
+
+* Danny Santana  
+* Nick Solak  
+
+
+It's possible that not all of the players listed above will be on the roster, but for today let's use the full list above and their 2019 stats, pulled from [baseball-reference.com](https://www.baseball-reference.com/). Whenever I reference the 2020 Rangers, it will be the roster listed above. And their stats are from the 2019 season, whether with the Rangers or with another team (e.g. Todd Frazier with the Mets).
+
+### 2019 Offensive Production
+
+```{r table, warning=FALSE, echo=FALSE}
+Stats <- ProjectedRangers2020Lineup_2019Stats %>% 
+  select(-c(Rk,Age))
+Stats_Display <- ProjectedRangers2020Lineup_2019Stats %>%
+  select(Name,Pos,AB,R,H,HR,RBI,BB,SO,BA,OBP,SLG,OPS,`OPS+`)
+DT::datatable(Stats_Display, 
+              rownames = FALSE, 
+              options=list(autoWidth = FALSE, 
+                           scrollX = TRUE,
+                           columnDefs = list(list(width = '90px', targets =0),
+                                             list(width = '10px', targets = 1:13)),
+                           pageLength = 15)) %>% 
+  formatStyle(0:14, fontSize = '85%')
+```
+
+At first glance, I have three main takeaways from the above table.   
+
+1. The Rangers have an aggressively average offense, with a combined OPS+ of 93.5
+(shown as a blue line below).  
+2. Joey Gallo had a great, albeit shortened, 2019 campaign. We should expect similar numbers in this year's shortened season.  
+3. Jeff Mathis was terrible *at* the plate, despite being great *behind* the plate.  
+
+```{r scatter, echo=FALSE}
+Scatter_OPS_2019 <- ggplot(Stats, aes(x = AB, y = `OPS+`, names = Name)) +
+  geom_point() +
+  geom_hline(yintercept = 100, col = 'red', lty = 2) +
+  geom_hline(yintercept = weighted.mean(Stats$`OPS+`,Stats$PA), col = 'blue', lty = 2) +
+  geom_text(data = Stats %>% filter(`OPS+` < 25),
+            aes(label = Name),
+           # nudge_x = 52,
+            nudge_y = -10) +
+  geom_text(aes(100,105, label = "League average"), col = 'red', size = 3) +
+  geom_text(aes(100,88, label = "Rangers"), col = 'blue', size = 3) +
+  labs(title = "2019 Statistics for Rangers Expected 2020 Roster")
+ggplotly(Scatter_OPS_2019)
+```
+
+Of all catchers in 2019, only Max Stassi (.378) had a lower OPS than Jeff Mathis (.433). And going into the 2020 season, the Rangers have two catchers who are much better hitters than Mathis.
+
+```{r bar, echo=FALSE}
+Bar_OPS_2019 <- Stats %>% filter(Pos == "C") %>% 
+  ggplot(aes(x = Name, y = `OPS+`)) +
+  geom_col() +
+  #geom_hline(yintercept = 100, col = 'black', lty = 2) +
+  #geom_hline(yintercept = weighted.mean(Stats$`OPS+`,Stats$PA), col = 'blue', lty = 2) +
+  #geom_text(aes(1,105,label = "League average"), col = 'black', size = 4) +
+  #geom_text(aes(88, label = "Rangers"), col = 'blue', size = 3) +
+  labs(title = "Texas Rangers Catchers OPS+", x = "Player") +
+  theme(axis.text.x = element_text(vjust = 1))
+Bar_OPS_2019
+```
+
+From all of this, we can safely say that Jeff Mathis batting is a liability for any team, particularly the Texas Rangers who need additional offensive production. But how much of a liability is he?
+
+Using the [RC formula](https://www.baseball-reference.com/bullpen/Runs_created#:~:text=Runs%20Created%20was%20developed%20by,by%20at%20bats%20plus%20walks.) from Bill James and Baseball Reference, I calculated the RC/PA for every player on the Rangers 2020 roster.
+
+```{r RC, echo = FALSE, message=FALSE, warning=FALSE}
+Stats <- Stats %>% 
+  mutate(OnBase = H + BB + HBP - GDP - CS) %>% 
+  mutate(BasesAdvanced = TB + 0.26*(BB + HBP - IBB) + 0.52*(SH + SF + SB)) %>% 
+  mutate(Opportunities = AB + BB + HBP + SH + SF) %>% 
+  mutate(RC = OnBase * BasesAdvanced / Opportunities) %>% 
+  mutate(RCperPA = RC/AB) %>% 
+  select(-c(OnBase,BasesAdvanced,Opportunities))
+Bar_RCperPA_2019 <- Stats %>% 
+  ggplot(aes(x = Name, y = RCperPA, fill = Pos)) +
+  geom_col() +
+  labs(title = "Runs Created per Plate Appearance", x = "Player") +
+  theme(axis.text.x = element_text(angle = 30,
+                                   vjust = 1,
+                                   hjust = 1)) +
+  geom_hline(yintercept = mean(Stats$RCperPA), col = 'blue', lty = 2) +
+  geom_text(aes(3, 0.147, label = "Team average"), col = 'blue', size = 3)
+Bar_RCperPA_2019
+```
+
+```{r RC comparison, include=FALSE}
+Stats %>% summarize(Gallo = max(RCperPA), 
+                    mean = mean(RCperPA),
+                    Mathis = min(RCperPA))
+Stats %>% filter(Name != "Jeff Mathis") %>% summarize(mean = mean(RCperPA))
+4*(0.1495529-0.04904228)
+4*(0.15749784-0.04904228)
+```
+
+### Translating Stats to Wins
+
+The mean RC/PA for the Texas Rangers is `r mean(Stats$RCperPA)`. Jeff Mathis has a RC/PA of `r min(Stats$RCperPA)`. Assuming four PAs per game and any other random hitter, Jeff Mathis hitting costs the Rangers 0.4 runs/game. 
+
+Should the Rangers release him? No  
+Should they strategically leverage his skills? Absolutely  
+What do I mean by that? Let Jeff Mathis catch, but don't let him hit.
+
+Especially with expanded rosters (meaning the Rangers can carry three catchers), Chris Woodward and the Rangers should start Jeff Mathis at catcher every home game and use him as defensive reserve in every away game. 
+
+As the home team, Mathis can catch ~3 defensive innings, have 0 PAs, and then be replaced by Chirinos or Trevino in the bottom of the 3th when the catcher's spot comes up to bat. As the visiting team, Mathis can enter the game after the starting catcher's 1st PA, catch ~3 defensive innings, and be replaced by the remaining rostered catcher just before his PA (in case of late-inning emergency, Isiah Kiner-Falefa can be used as a replacement).
+
+Allowing Mathis to catch through about the 5th inning every day starter will give SPs consistency when they toe the rubber. And removing him after 0 or 1 PAs will save the Rangers an expected 0.40 or 0.30 runs/game, on average.  
+
+How much does 0.4 runs/game matter?
+
+```{r regression, include=FALSE}
+Rangers2019Schedule <- read_csv("Data/Rangers2019Schedule.csv")
+Schedule <- Rangers2019Schedule %>% 
+  mutate(Win = case_when(Rangers2019Schedule$`W/L` == "W" ~ 1,
+                         Rangers2019Schedule$`W/L` == "W-wo" ~ 1,
+                         Rangers2019Schedule$`W/L` == "L" ~ 0,
+                         Rangers2019Schedule$`W/L` == "L-wo" ~ 0)) %>% 
+  select("RS" = R, RA, Win)
+RS_Importance <- glm(data = Schedule, Win ~ RS, family = "binomial")
+runs <- seq(0, 20, 0.01)
+Win_Prob <- as.tibble(predict(RS_Importance, list(RS = runs), type = "response")) %>% 
+  mutate(Runs = runs)
+Win_Prob
+```
+
+After running a regression on wins by runs scored, I plotted the win probability chart based on the Texas Rangers 2019 season. 
+
+```{r probability plot, echo = FALSE, warning = FALSE, message=FALSE}
+Win_Prob_Plot <- ggplot(Win_Prob, aes(x = Runs, y = value)) +
+  geom_line() +
+  geom_hline(yintercept = 0.5021284, col = 'red', lty = 2) +
+  geom_text(aes(2.75,0.47, label = "Mathis batting"), col = 'red', size = 3.5) +
+  geom_point(aes(x = mean(Schedule$RS), y = 0.5021284), col = 'red') +
+  geom_hline(yintercept = 0.5519277, col = 'blue', lty = 2) + 
+  geom_text(aes(8.25,0.58, label = "Mathis NOT batting"), col = 'blue', size = 3.5) +
+  geom_point(aes(x = 5.4020425, y = 0.5519277), col = 'blue') +
+  labs(title = "Win Probability by Runs Scored", 
+       x = "Runs Scored", 
+       y = "Win Probability")
+ggplotly(Win_Prob_Plot)
+```
+
+Increasing the Rangers mean runs scored by 0.4 increasing win probability by 5.0%. Over 60 games, this increased the Rangers win total from 30.1 to 33.1 games. 
+
+The graph above shows the difference between Mathis and any other random batter. But what if Chirinos handled all of the Mathis PAs? Hence the next graph...
+
+```{r Chirinos probability plot, echo = FALSE, warning = FALSE, message=FALSE}
+Chirinos_Prob_Plot <- ggplot(Win_Prob, aes(x = Runs, y = value)) +
+  geom_line() +
+  geom_hline(yintercept = 0.5021284, col = 'red', lty = 2) +
+  geom_text(aes(2.75,0.47, label = "Mathis batting"), col = 'red', size = 3.5) +
+  geom_point(aes(x = mean(Schedule$RS), y = 0.5021284), col = 'red') +
+  geom_hline(yintercept = 0.5519277, col = 'blue', lty = 2) + 
+  geom_text(aes(8.2,0.518, label = "Mathis NOT batting"), col = 'blue', size = 3) +
+  geom_point(aes(x = 5.4020425, y = 0.5519277), col = 'blue') +
+  geom_hline(yintercept = 0.5556334, col = 'violet', lty = 2) + 
+  geom_text(aes(8.3,0.58, label = "Chirinos batting"), col = 'violet', size = 3.5) +
+  geom_point(aes(x = 5.4338222, y = 0.5556334), col = 'violet') +
+  labs(title = "Win Probability by Runs Scored - Chirinos", 
+       x = "Runs Scored", 
+       y = "Win Probability")
+ggplotly(Chirinos_Prob_Plot)
+```
+
+The difference between the purple and blue lines appears small, but it's not insignificant. The line for Chirinos both (1) gives a concrete example for who can replace Mathis and (2) increases the win total to 33.3 games.
+
+### What about defense? 
+
+I agree, very important. It's much tougher to quantify than offense, but Baseball Prospectus does a great job with its [FRAA stat](https://legacy.baseballprospectus.com/sortable/index.php?cid=2802101). FRAA combines framing runs, blocking runs, and throwing runs. Here we have the stats for Chirinos, Mathis, and Trevino. I also included [Def](https://library.fangraphs.com/defense/def/) from FanGraphs.
+
+```{r defense, include=FALSE}
+Catcher <- c("Robinson Chirinos","Jeff Mathis","Jose Trevino")
+Framing_Chances <- c(6599,4524,2301)
+Framing_Runs <- c(-3.5,-1.8,0.8)
+Blocking_Chances <- c(4403,3367,1615)
+Blocking_Runs <- c(5.8,0.8,0.0)
+Steal_Attempts <- c(47,47,13)
+Throwing_Runs <- c(-0.5,-1.0,0.0)
+FRAA <- c(3.0,-2.8,0.5)
+Innings <- c(966,651.1,297.2)
+Def <- c(2.7,0.9,3.9)
+Defense <- data.frame(Catcher,Framing_Chances,Framing_Runs,Blocking_Chances,Blocking_Runs,Steal_Attempts,Throwing_Runs,FRAA,Innings,Def)
+Defense <- Defense %>% 
+  mutate(FRAAperInn = FRAA/Innings) %>% 
+  mutate(DefperInn = Def/Innings) %>% 
+  mutate(TotalPossibleDef = DefperInn * 60 * 9) %>% 
+  mutate(DefWinValue = TotalPossibleDef/9.5)
+```
+
+Again - defense, particularly catcher defense, is extremely difficult to measure. FanGraphs says that 9-10 Def equals about one win. None of the three catchers are worth one win based on last season if they caught every inning of all 60 games. Jose Trevino is the closed at only 0.75, and Jeff Mathis is actually the worst of the group at 0.08.
+
+Here is the full table for your reference:
+
+```{r defense table, echo=FALSE, warning=FALSE, message=FALSE}
+Defense_Display <- Defense %>% 
+  select(Catcher,Innings,FRAA,FRAAperInn,Def,DefperInn,TotalPossibleDef,DefWinValue)
+DT::datatable(Defense_Display, 
+              rownames = FALSE, 
+              options=list(autoWidth = FALSE, 
+                           scrollX = TRUE,
+                           columnDefs = list(list(width = '105px', targets = 0),
+                                             list(width = '10px', targets = 2:7))
+                           )
+              ) %>% 
+  formatStyle(1:8, fontSize = '85%') %>% 
+  formatRound(c("FRAAperInn","DefperInn","TotalPossibleDef","DefWinValue"),
+              3)
+```
+
+I cannot say with confidence how much Jeff Mathis helps behind the plate, or even if he helps at all based on 2019 stats. Even the Rangers best defensive catcher is worth less than 0.75 wins. If anything, our defense stats say that Trevino should start the game defensively and give way to Chirinos, with Mathis serving only as an emergency catcher. However, I cannot say that confidently.
+
+What I can say confidently is this: **Jeff Mathis should never bat**. Giving four PAs/game to Chirinos instead of Mathis increases the Rangers offensive win probability by 3.2 games to 33.3 games.
+
+According to [FanGraphs predicted standings](https://www.fangraphs.com/depthcharts.aspx?position=Standings), 33 wins would tie the Rangers with the Rays as the top wild card teams in the AL and place the Rangers just 1 game behind the Astros in the AL West. Three games could very easily be the difference between winning a division and missing the playoffs entirely. 
+
+

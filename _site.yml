@@ -6,10 +6,20 @@ navbar:
   left:
     - text: "About"
       href: index.html
-    - text: "Three Batter Rule"
-      href: ThreeBatterRule.html
-    - text: "Washington Post"
-      href: WashingtonPost.html
+    - text: "Baseball Research"
+      icon: fa-baseball
+      menu:
+        - text: "Lecture 0"
+          href: lecture0.html   
+        - text: "Three Batter Rule"
+          href: ThreeBatterRule.html
+        - text: "Jeff Mathis"
+          href: JeffMathis.html 
+    - text: "Other Projects"
+      icon: fa-bar-chart
+      menu:
+        - text: "Washington Post"
+          href: WashingtonPost.html
       
 output:
   html_document:
