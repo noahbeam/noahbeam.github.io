@@ -5,15 +5,14 @@ navbar:
   theme: "cerulean"
   left:
     - text: "About"
+      icon: fa-user
       href: index.html
     - text: "Baseball Research"
-      icon: fa-baseball
+      icon: fa-trophy
       menu:
-        - text: "Lecture 0"
-          href: lecture0.html   
-        - text: "Three Batter Rule"
+        - text: "Three Batter Rule Creates a Market Inefficiency"
           href: ThreeBatterRule.html
-        - text: "Jeff Mathis"
+        - text: "Jeff Mathis Should Never Hit"
           href: JeffMathis.html 
     - text: "Other Projects"
       icon: fa-bar-chart

@@ -17,11 +17,11 @@ knitr::opts_chunk$set(echo = TRUE)
 
 Disclaimer: Jeff Mathis is a great defensive catcher and deserves a spot on the 2020 Texas Rangers roster.
 
-With that out of the way, let's look at how destructive Jeff Mathis is for the Texas Rangers *offense*.
+With that out of the way, let's look at how destructive Jeff Mathis is for the Rangers *offense*.
 
 ### Expected 2020 Texas Rangers Roster
 
-The official season is a few days away, but rosters are nearly established. Particularly, the roster for the Texas Rangers won't include any surprising names. For this analysis, I included every player with a solid chance at making the Opening Day roster, which consists of these players...
+The official season is a few days away, but rosters are nearly established. Particularly, the roster for the Rangers won't include any surprising names. For this analysis, I included every player with a solid chance at making the Opening Day roster, which consists of these players...
 
 *Catchers*  
 
@@ -106,9 +106,9 @@ Bar_OPS_2019 <- Stats %>% filter(Pos == "C") %>%
 Bar_OPS_2019
 ```
 
-From all of this, we can safely say that Jeff Mathis batting is a liability for any team, particularly the Texas Rangers who need additional offensive production. But how much of a liability is he?
+From all of this, we can safely say that Jeff Mathis batting is a liability for any team, particularly the Rangers, who need additional offensive production. But how much of a liability is he?
 
-Using the [RC formula](https://www.baseball-reference.com/bullpen/Runs_created#:~:text=Runs%20Created%20was%20developed%20by,by%20at%20bats%20plus%20walks.) from Bill James and Baseball Reference, I calculated the RC/PA for every player on the Rangers 2020 roster.
+Using the [RC formula](https://www.baseball-reference.com/bullpen/Runs_created#:~:text=Runs%20Created%20was%20developed%20by,by%20at%20bats%20plus%20walks.) from Bill James and Baseball-Reference, I calculated the RC/PA for every player on the Rangers 2020 roster.
 
 ```{r RC, echo = FALSE, message=FALSE, warning=FALSE}
 Stats <- Stats %>% 
@@ -141,17 +141,17 @@ Stats %>% filter(Name != "Jeff Mathis") %>% summarize(mean = mean(RCperPA))
 
 ### Translating Stats to Wins
 
-The mean RC/PA for the Texas Rangers is `r mean(Stats$RCperPA)`. Jeff Mathis has a RC/PA of `r min(Stats$RCperPA)`. Assuming four PAs per game and any other random hitter, Jeff Mathis hitting costs the Rangers 0.4 runs/game. 
+The mean RC/PA for the Rangers is `r mean(Stats$RCperPA)`. Jeff Mathis has a RC/PA of `r min(Stats$RCperPA)`. Assuming four PAs per game and any other random hitter, Jeff Mathis hitting costs the Rangers 0.4 runs/game. 
 
-Should the Rangers release him? No  
-Should they strategically leverage his skills? Absolutely  
+Should the Rangers release him? No.  
+Should they strategically leverage his skills? Absolutely.  
 What do I mean by that? Let Jeff Mathis catch, but don't let him hit.
 
-Especially with expanded rosters (meaning the Rangers can carry three catchers), Chris Woodward and the Rangers should start Jeff Mathis at catcher every home game and use him as defensive reserve in every away game. 
+Especially with expanded rosters (meaning the Rangers can carry three catchers), Chris Woodward and the Rangers should start Jeff Mathis at catcher every home game and use him as a defensive reserve in every away game. 
 
-As the home team, Mathis can catch ~3 defensive innings, have 0 PAs, and then be replaced by Chirinos or Trevino in the bottom of the 3th when the catcher's spot comes up to bat. As the visiting team, Mathis can enter the game after the starting catcher's 1st PA, catch ~3 defensive innings, and be replaced by the remaining rostered catcher just before his PA (in case of late-inning emergency, Isiah Kiner-Falefa can be used as a replacement).
+As the home team, Mathis can catch ~3 defensive innings, have 0 PAs, and then be replaced by Chirinos or Trevino in the bottom of the 3rd when the catcher's spot comes up to bat. As the visiting team, Mathis can enter the game after the starting catcher's 1st PA, catch ~3 defensive innings, and be replaced by the remaining rostered catcher just before his PA (in case of late-inning emergency, Isiah Kiner-Falefa can be used as a replacement).
 
-Allowing Mathis to catch through about the 5th inning every day starter will give SPs consistency when they toe the rubber. And removing him after 0 or 1 PAs will save the Rangers an expected 0.40 or 0.30 runs/game, on average.  
+Allowing Mathis to catch through the 3rd inning will give SPs (or openers) consistency when they toe the rubber. And removing him before his PAs will save the Rangers an expected 0.40 or 0.30 runs/game, on average.  
 
 How much does 0.4 runs/game matter?
 
@@ -170,7 +170,7 @@ Win_Prob <- as.tibble(predict(RS_Importance, list(RS = runs), type = "response")
 Win_Prob
 ```
 
-After running a regression on wins by runs scored, I plotted the win probability chart based on the Texas Rangers 2019 season. 
+After running a regression on wins by runs scored, I plotted the win probability chart based on the Rangers 2019 season. 
 
 ```{r probability plot, echo = FALSE, warning = FALSE, message=FALSE}
 Win_Prob_Plot <- ggplot(Win_Prob, aes(x = Runs, y = value)) +
@@ -187,7 +187,7 @@ Win_Prob_Plot <- ggplot(Win_Prob, aes(x = Runs, y = value)) +
 ggplotly(Win_Prob_Plot)
 ```
 
-Increasing the Rangers mean runs scored by 0.4 increasing win probability by 5.0%. Over 60 games, this increased the Rangers win total from 30.1 to 33.1 games. 
+Increasing the Rangers' mean runs scored by 0.4 increased win probability by 5.0%. Over 60 games, this increased the Rangers' win total from 30.1 to 33.1 games. 
 
 The graph above shows the difference between Mathis and any other random batter. But what if Chirinos handled all of the Mathis PAs? Hence the next graph...
 
@@ -234,7 +234,7 @@ Defense <- Defense %>%
   mutate(DefWinValue = TotalPossibleDef/9.5)
 ```
 
-Again - defense, particularly catcher defense, is extremely difficult to measure. FanGraphs says that 9-10 Def equals about one win. None of the three catchers are worth one win based on last season if they caught every inning of all 60 games. Jose Trevino is the closed at only 0.75, and Jeff Mathis is actually the worst of the group at 0.08.
+Again - defense, particularly catcher defense, is extremely difficult to measure. FanGraphs says that 9-10 Def equals about one win. None of the three catchers are worth one win based on last season if they caught every inning of all 60 games. Jose Trevino is the closest at only 0.75, and Jeff Mathis is actually the worst of the group at 0.08.
 
 Here is the full table for your reference:
 
@@ -254,9 +254,9 @@ DT::datatable(Defense_Display,
               3)
 ```
 
-I cannot say with confidence how much Jeff Mathis helps behind the plate, or even if he helps at all based on 2019 stats. Even the Rangers best defensive catcher is worth less than 0.75 wins. If anything, our defense stats say that Trevino should start the game defensively and give way to Chirinos, with Mathis serving only as an emergency catcher. However, I cannot say that confidently.
+I cannot say with confidence how much Jeff Mathis helps behind the plate, or even if he helps at all based on 2019 stats. Even the Rangers' best defensive catcher is worth less than 0.75 wins. If anything, our defense stats say that Trevino should start the game defensively and give way to Chirinos, with Mathis serving only as an emergency catcher. However, I cannot say that confidently.
 
-What I can say confidently is this: **Jeff Mathis should never bat**. Giving four PAs/game to Chirinos instead of Mathis increases the Rangers offensive win probability by 3.2 games to 33.3 games.
+What I can say confidently is this: **Jeff Mathis should never bat**. Giving four PAs/game to Chirinos instead of Mathis increases the Rangers' offensive win probability by 3.2 games to 33.3 games.
 
 According to [FanGraphs predicted standings](https://www.fangraphs.com/depthcharts.aspx?position=Standings), 33 wins would tie the Rangers with the Rays as the top wild card teams in the AL and place the Rangers just 1 game behind the Astros in the AL West. Three games could very easily be the difference between winning a division and missing the playoffs entirely. 
 
